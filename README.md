@@ -2,7 +2,8 @@
 
 # Setup
 ## Env fie
-Make `.env` with `CYTUBE_URL`, `CYTUBE_URL_CHANNEL_NAME`, `CYTUBE_USERNAME`, and `CYTUBE_PASSWORD`.
+Make `.env` with `CYTUBE_URL`, `CYTUBE_URL_CHANNEL_NAME`, `CYTUBE_USERNAME`, `CYTUBE_PASSWORD`,
+`CYTUBE_USER_AGENT` and `CYTUBE_COOKIE`.
 
 Something like:
 ```
@@ -10,6 +11,8 @@ CYTUBE_URL=https://cytu.be/
 CYTUBE_URL_CHANNEL_NAME=my_channel
 CYTUBE_USERNAME=my_username
 CYTUBE_PASSWORD=my_password
+CYTUBE_USER_AGENT=
+CYTUBE_COOKIE=
 ```
 
 ## Channels

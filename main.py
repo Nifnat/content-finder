@@ -1,3 +1,4 @@
+import json.decoder
 import os
 import sqlite3
 import requests
@@ -12,7 +13,9 @@ load_dotenv()
 sio = socketio.Client()
 con = sqlite3.connect('content.db')
 
+
 def init_db() -> None:
+
     """
     Reads from channel-ids.txt and inserts into DB. Inserts date of most recent video.
     
@@ -49,7 +52,9 @@ def init_db() -> None:
                 print(f'{name} already in db, skipping.')
     cur.close()
 
+
 def find_content() -> list:
+
     content = []
     cur = con.cursor()
 
@@ -106,19 +111,27 @@ def add_to_cytube(content_list: list) -> None:
     channel_name = os.getenv('CYTUBE_URL_CHANNEL_NAME')
     cytube_username = os.getenv('CYTUBE_USERNAME')
     cytube_password = os.getenv('CYTUBE_PASSWORD')
+    cytube_useragent = os.getenv('CYTUBE_USER_AGENT')
+    cytube_cookie = os.getenv('CYTUBE_COOKIE')
+
 
     socketConfig = f'{url}socketconfig/{channel_name}.json'
     resp = requests.get(socketConfig)
-    servers = resp.json()
     socket_url = ""
+    try:
+        servers = resp.json()
 
-    for server in servers['servers']:
-        if server["secure"]:
-            socket_url = server["url"]
-            break
-    
-    if not socket_url:
-        raise socketio.exception.ConnectionError('Unable to find a secure socket to connect to')
+        for server in servers['servers']:
+            if server["secure"]:
+                socket_url = server["url"]
+                break
+
+        if not socket_url:
+            raise socketio.exception.ConnectionError('Unable to find a secure socket to connect to')
+
+    except json.decoder.JSONDecodeError:
+        print("CloudFlare page reached")
+        socket_url = "https://zip.cytu.be:8443"
 
     # built in events
     @sio.event
@@ -158,9 +171,12 @@ def add_to_cytube(content_list: list) -> None:
     # sio makes use of built in callbacks, i.e. sio.on calls. 
     # Flow:
     # .connect -> connect() -> channel_opts() -> login()
-    sio.connect(socket_url)
+    headers = {"user-agent": cytube_useragent,
+               "cookie":cytube_cookie}
+    sio.connect(socket_url, headers=headers)
 
     sio.wait()
+
 
 if __name__ == '__main__':
     init_db()
