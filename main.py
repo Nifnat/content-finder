@@ -152,7 +152,16 @@ def add_to_cytube(content_list: list) -> None:
     def channel_opts(resp):
         print(resp)
         global sio
-        sio.emit('login', {"name": cytube_username, "pw": cytube_password})
+        #sio.emit('login', {"name": cytube_username, "pw": cytube_password})
+        global queue_resp
+        for content in content_list:
+            sio.emit('queue', {"id": content, "type": "yt", "pos": "end", "temp": True})
+            # Wait for resp
+            while not queue_resp:
+                sio.sleep(0.1)
+            queue_resp = None
+        print('Disconnecting...')
+        sio.disconnect()
 
     @sio.on('login')
     def login(resp):
